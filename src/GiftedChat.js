@@ -118,6 +118,14 @@ class GiftedChat extends React.Component {
     const { messages, text } = nextProps;
     this.setMessages(messages || []);
     this.setTextFromProp(text);
+
+    //new
+    if(this.props.minInputToolbarHeight !== nextProps.minInputToolbarHeight) {
+      let inputToolbarHeight = this.state.composerHeight + (nextProps.minInputToolbarHeight - MIN_COMPOSER_HEIGHT);
+
+      const newMessagesContainerHeight = this.getMaxHeight() - inputToolbarHeight - this.getKeyboardHeight() + this.getBottomOffset();
+      this.setState({ messagesContainerHeight: this.prepareMessagesContainerHeight(newMessagesContainerHeight), });
+    }
   }
 
   initLocale() {
@@ -217,9 +225,10 @@ class GiftedChat extends React.Component {
 
   // TODO: setMinInputToolbarHeight
   getMinInputToolbarHeight() {
-    return this.props.renderAccessory
-      ? this.props.minInputToolbarHeight * 2
-      : this.props.minInputToolbarHeight;
+    return this.props.minInputToolbarHeight;
+    // return this.props.renderAccessory
+    //   ? this.props.minInputToolbarHeight * 2
+    //   : this.props.minInputToolbarHeight;
   }
   calculateInputToolbarHeight(composerHeight) {
     return composerHeight + (this.getMinInputToolbarHeight() - MIN_COMPOSER_HEIGHT);
@@ -557,6 +566,7 @@ GiftedChat.defaultProps = {
   maxInputLength: null,
   forceGetKeyboardHeight: false,
   inverted: true,
+  minInputToolbarHeight:44,
 };
 
 GiftedChat.propTypes = {
@@ -607,6 +617,7 @@ GiftedChat.propTypes = {
   forceGetKeyboardHeight: PropTypes.bool,
   inverted: PropTypes.bool,
   textInputProps: PropTypes.object,
+  minInputToolbarHeight: PropTypes.number,
 };
 
 export {

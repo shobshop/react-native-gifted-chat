@@ -33,6 +33,16 @@
   <a href="https://snack.expo.io/@xcarpentier/gifted-chat" target="_blank"><i>demo</i></a>
 </p>
 
+## Sponsor
+
+<p align="center">
+ <sup>Sponsored by <a href="https://pusher.com/chatkit?utm_source=github&utm_campaign=react-native-gifted-chat-sponsorship">Pusher Chatkit</a>:</sup>
+</p>
+<p align="center">
+  <a href="https://pusher.com/chatkit?utm_source=github&utm_campaign=react-native-gifted-chat-sponsorship">
+    <img width="650" src="https://github.com/bookercodes/react-native-gifted-chat/blob/master/media/chatit-banner.png?raw=true" alt="Pusher Chatkit"></a>
+</p>
+
 ## Features
 
 * Fully customizable components
@@ -78,7 +88,7 @@ class Example extends React.Component {
           user: {
             _id: 2,
             name: 'React Native',
-            avatar: 'https://facebook.github.io/react/img/logo_og.png',
+            avatar: 'https://placeimg.com/140/140/any',
           },
         },
       ],

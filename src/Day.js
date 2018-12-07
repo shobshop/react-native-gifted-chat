@@ -11,10 +11,10 @@ import { isSameDay } from './utils';
 import { DATE_FORMAT } from './Constant';
 
 export default function Day(
-  { dateFormat, currentMessage, previousMessage, nextMessage, containerStyle, wrapperStyle, textStyle, inverted },
+  { dateFormat, currentMessage, previousMessage, containerStyle, wrapperStyle, textStyle },
   context,
 ) {
-  if (!isSameDay(currentMessage, inverted ? previousMessage : nextMessage)) {
+  if (!isSameDay(currentMessage, previousMessage)) {
     return (
       <View style={[styles.container, containerStyle]}>
         <View style={wrapperStyle}>
@@ -56,7 +56,6 @@ Day.defaultProps = {
     createdAt: null,
   },
   previousMessage: {},
-  nextMessage: {},
   containerStyle: {},
   wrapperStyle: {},
   textStyle: {},
@@ -66,8 +65,6 @@ Day.defaultProps = {
 Day.propTypes = {
   currentMessage: PropTypes.object,
   previousMessage: PropTypes.object,
-  nextMessage: PropTypes.object,
-  inverted: PropTypes.bool,
   containerStyle: ViewPropTypes.style,
   wrapperStyle: ViewPropTypes.style,
   textStyle: Text.propTypes.style,

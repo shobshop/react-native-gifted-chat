@@ -2,23 +2,17 @@
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import {
-  Text,
-  Clipboard,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-  ViewPropTypes,
-} from 'react-native';
+import { Text, Clipboard, StyleSheet, TouchableWithoutFeedback, View, ViewPropTypes } from 'react-native';
 
 import MessageText from './MessageText';
 import MessageImage from './MessageImage';
 import Time from './Time';
 import Color from './Color';
 
-import { isSameUser, isSameDay, warnDeprecated } from './utils';
+import { isSameUser, isSameDay } from './utils';
+import MessageVideo from './MessageVideo';
 
-export default class Bubble extends React.Component {
+export default class Bubble extends React.PureComponent {
 
   constructor(props) {
     super(props);
@@ -97,6 +91,17 @@ export default class Bubble extends React.Component {
     return null;
   }
 
+  renderMessageVideo() {
+    if (this.props.currentMessage.video) {
+      const { containerStyle, wrapperStyle, ...messageVideoProps } = this.props;
+      if (this.props.renderMessageVideo) {
+        return this.props.renderMessageVideo(messageVideoProps);
+      }
+      return <MessageVideo {...messageVideoProps} />;
+    }
+    return null;
+  }
+
   renderTicks() {
     const { currentMessage } = this.props;
     if (this.props.renderTicks) {
@@ -105,11 +110,12 @@ export default class Bubble extends React.Component {
     if (currentMessage.user._id !== this.props.user._id) {
       return null;
     }
-    if (currentMessage.sent || currentMessage.received) {
+    if (currentMessage.sent || currentMessage.received || currentMessage.pending) {
       return (
         <View style={styles.tickView}>
           {currentMessage.sent && <Text style={[styles.tick, this.props.tickStyle]}>✓</Text>}
           {currentMessage.received && <Text style={[styles.tick, this.props.tickStyle]}>✓</Text>}
+          {currentMessage.pending && <Text style={[styles.tick, this.props.tickStyle]}>🕓</Text>}
         </View>
       );
     }
@@ -127,6 +133,23 @@ export default class Bubble extends React.Component {
     return null;
   }
 
+  renderUsername() {
+    const { currentMessage } = this.props;
+    if (this.props.renderUsernameOnMessage) {
+      if (currentMessage.user._id === this.props.user._id) {
+        return null;
+      }
+      return (
+        <View style={styles.usernameView}>
+          <Text style={[styles.username, this.props.usernameStyle]}>
+            ~ {currentMessage.user.name}
+          </Text>
+        </View>
+      );
+    }
+    return null;
+  }
+
   renderCustomView() {
     if (this.props.renderCustomView) {
       return this.props.renderCustomView(this.props);
@@ -136,12 +159,7 @@ export default class Bubble extends React.Component {
 
   render() {
     return (
-      <View
-        style={[
-          styles[this.props.position].container,
-          this.props.containerStyle[this.props.position],
-        ]}
-      >
+      <View style={[styles[this.props.position].container, this.props.containerStyle[this.props.position]]}>
         <View
           style={[
             styles[this.props.position].wrapper,
@@ -158,8 +176,10 @@ export default class Bubble extends React.Component {
             <View>
               {this.renderCustomView()}
               {this.renderMessageImage()}
+              {this.renderMessageVideo()}
               {this.renderMessageText()}
               <View style={[styles.bottom, this.props.bottomContainerStyle[this.props.position]]}>
+                {this.renderUsername()}
                 {this.renderTime()}
                 {this.renderTicks()}
               </View>
@@ -224,6 +244,17 @@ const styles = {
     flexDirection: 'row',
     marginRight: 10,
   },
+  username: {
+    top: -3,
+    left: 0,
+    fontSize: 12,
+    backgroundColor: 'transparent',
+    color: '#aaa',
+  },
+  usernameView: {
+    flexDirection: 'row',
+    marginHorizontal: 10,
+  },
 };
 
 Bubble.contextTypes = {
@@ -234,8 +265,10 @@ Bubble.defaultProps = {
   touchableProps: {},
   onLongPress: null,
   renderMessageImage: null,
+  renderMessageVideo: null,
   renderMessageText: null,
   renderCustomView: null,
+  renderUsername: null,
   renderTicks: null,
   renderTime: null,
   position: 'left',
@@ -250,11 +283,9 @@ Bubble.defaultProps = {
   wrapperStyle: {},
   bottomContainerStyle: {},
   tickStyle: {},
+  usernameStyle: {},
   containerToNextStyle: {},
   containerToPreviousStyle: {},
-  // TODO: remove in next major release
-  isSameDay: warnDeprecated(isSameDay),
-  isSameUser: warnDeprecated(isSameUser),
 };
 
 Bubble.propTypes = {
@@ -262,8 +293,11 @@ Bubble.propTypes = {
   touchableProps: PropTypes.object,
   onLongPress: PropTypes.func,
   renderMessageImage: PropTypes.func,
+  renderMessageVideo: PropTypes.func,
   renderMessageText: PropTypes.func,
   renderCustomView: PropTypes.func,
+  renderUsernameOnMessage: PropTypes.bool,
+  renderUsername: PropTypes.func,
   renderTime: PropTypes.func,
   renderTicks: PropTypes.func,
   position: PropTypes.oneOf(['left', 'right']),
@@ -283,6 +317,7 @@ Bubble.propTypes = {
     right: ViewPropTypes.style,
   }),
   tickStyle: Text.propTypes.style,
+  usernameStyle: Text.propTypes.style,
   containerToNextStyle: PropTypes.shape({
     left: ViewPropTypes.style,
     right: ViewPropTypes.style,
@@ -291,7 +326,4 @@ Bubble.propTypes = {
     left: ViewPropTypes.style,
     right: ViewPropTypes.style,
   }),
-  // TODO: remove in next major release
-  isSameDay: PropTypes.func,
-  isSameUser: PropTypes.func,
 };

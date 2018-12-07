@@ -1,5 +1,9 @@
 import * as React from 'react';
-import { ViewStyle, TextStyle, TextProperties, TextInputProperties, ImageStyle, ListViewProperties, ImageProperties } from 'react-native';
+import * as RN from 'react-native';
+
+type ViewStyle = RN.StyleProp<RN.ViewStyle>;
+type TextStyle = RN.StyleProp<RN.TextStyle>;
+type ImageStyle = RN.StyleProp<RN.ImageStyle>;
 
 export interface LeftRightStyle<T> {
   left: T;
@@ -12,25 +16,16 @@ export interface User {
   avatar?: string;
 }
 
-export interface IChatMessage {
+export interface IMessage {
   _id: any;
   text: string;
   createdAt: Date;
-  user: {
-    _id: any;
-    name: string;
-    avatar: string;
-  };
+  user: User;
+  image?: string;
+  system?: boolean;
 }
 
-export interface ISystemMessage {
-  _id: any;
-  text: string;
-  createdAt: Date;
-  system: true;
-}
-
-export type IMessage = IChatMessage | ISystemMessage;
+export type IChatMessage = IMessage
 
 interface ActionsProps {
   // todo: onSend is not used
@@ -41,18 +36,19 @@ interface ActionsProps {
   wrapperStyle?: ViewStyle;
   containerStyle?: ViewStyle;
   iconTextStyle?: ViewStyle;
+  onPressActionButton(): void;
 }
 
 export class Actions extends React.Component<ActionsProps> { }
 
-interface AvatarProps {
+interface AvatarProps<TMessage extends IMessage = IMessage> {
   renderAvatarOnTop: boolean;
   position: "left" | "right";
-  currentMessage: IChatMessage;
-  previousMessage: IMessage;
-  nextMessage: IMessage;
+  currentMessage: TMessage;
+  previousMessage: TMessage;
+  nextMessage: TMessage;
   onPressAvatar(): void;
-  renderAvatar(props: AvatarProps): JSX.Element;
+  renderAvatar(props: AvatarProps<TMessage>): JSX.Element;
   containerStyle: {
     left: any;
     right: any;
@@ -62,34 +58,34 @@ interface AvatarProps {
     right: any;
   };
   // TODO: remove in next major release
-  isSameDay(currentMessage: IMessage, message: IMessage): boolean;
-  isSameUser(currentMessage: IMessage, message: IMessage): boolean;
+  isSameDay(currentMessage: TMessage, message: TMessage): boolean;
+  isSameUser(currentMessage: TMessage, message: TMessage): boolean;
 }
 
 export class Avatar extends React.Component<AvatarProps> { }
 
-interface BubbleProps {
+interface BubbleProps<TMessage extends IMessage = IMessage> {
   user: User;
   touchableProps?: object;
-  onLongPress?(): void;
-  renderMessageImage?(messageImageProps: MessageImageProps): React.ReactNode;
+  onLongPress?(context?: any, message?: any): void;
+  renderMessageImage?(messageImageProps: RenderMessageImageProps): React.ReactNode;
   renderMessageText?(messageTextProps: MessageTextProps): React.ReactNode;
   renderCustomView?(bubbleProps: BubbleProps): React.ReactNode;
   renderTime?(timeProps: TimeProps): React.ReactNode;
-  renderTicks?(currentMessage: IMessage): React.ReactNode;
+  renderTicks?(currentMessage: TMessage): React.ReactNode;
   position?: "left" | "right";
-  currentMessage?: IMessage;
-  nextMessage?: IMessage;
-  previousMessage?: IMessage;
+  currentMessage?: TMessage;
+  nextMessage?: TMessage;
+  previousMessage?: TMessage;
   containerStyle?: LeftRightStyle<ViewStyle>;
   wrapperStyle: LeftRightStyle<ViewStyle>;
   bottomContainerStyle: LeftRightStyle<ViewStyle>;
   tickStyle: TextStyle;
   containerToNextStyle: LeftRightStyle<ViewStyle>;
-  containertoPreviousStyle: LeftRightStyle<ViewStyle>;
+  containerToPreviousStyle: LeftRightStyle<ViewStyle>;
   // TODO: remove in next major release
-  isSameDay?(currentMessage: IMessage, inextMessage: IMessage): boolean;
-  isSameUser?(currentMessage: IMessage, nextMessage: IMessage): boolean;
+  isSameDay?(currentMessage: TMessage, nextMessage: TMessage): boolean;
+  isSameUser?(currentMessage: TMessage, nextMessage: TMessage): boolean;
 }
 
 export class Bubble extends React.Component<BubbleProps> { }
@@ -98,27 +94,27 @@ interface ComposerProps {
   composerHeight?: number;
   text?: string;
   placeholder?: string;
-  placeholderTextCoolor?: string;
-  textInputProps?: Partial<TextInputProperties>;
+  placeholderTextColor?: string;
+  textInputProps?: Partial<RN.TextInputProps>;
   onTextChanged?(text: string): void;
   onInputSizeChanged?(contentSize: number): void;
   multiline?: boolean;
-  textInputStyle?: TextInputProperties["style"];
+  textInputStyle?: RN.TextInputProps["style"];
   textInputAutoFocus?: boolean;
-  keyboardAppearance: TextInputProperties["keyboardAppearance"];
+  keyboardAppearance: RN.TextInputProps["keyboardAppearance"];
 }
 
 export class Composer extends React.Component<ComposerProps> { }
 
-interface DayProps {
-  currentMessage?: IMessage;
-  previousMessage?: IMessage;
+interface DayProps<TMessage extends IMessage = IMessage> {
+  currentMessage?: TMessage;
+  previousMessage?: TMessage;
   containerStyle?: ViewStyle;
   wrapperStyle?: ViewStyle;
   textStyle?: TextStyle;
   // TODO: remove in next major release
-  isSameDay?(currentMessage: IMessage, inextMessage: IMessage): boolean;
-  isSameUser?(currentMessage: IMessage, nextMessage: IMessage): boolean;
+  isSameDay?(currentMessage: TMessage, nextMessage: TMessage): boolean;
+  isSameUser?(currentMessage: TMessage, nextMessage: TMessage): boolean;
   dateFormat?: string;
 }
 
@@ -131,21 +127,21 @@ interface GiftedAvatarProps {
   textStyle?: TextStyle;
 }
 
-export class GiftedAvatarProps extends React.Component<GiftedAvatarProps> { }
+export class GiftedAvatar extends React.Component<GiftedAvatarProps> { }
 
-export interface GiftedChatProps {
+export interface GiftedChatProps<TMessage extends IMessage = IMessage> {
   /* Messages to display */
-  messages?: any[];
+  messages?: TMessage[];
   /* Input text; default is undefined, but if specified, it will override GiftedChat's internal state */
   text?: string;
   /* Placeholder when text is empty; default is 'Type a message...' */
   placeholder?: string;
   /* Generate an id for new messages. Defaults to UUID v4, generated by uuid */
-  messageIdGenerator?<T extends any>(message: T): string;
+  messageIdGenerator?(message: TMessage): string;
   /* User sending the messages: { _id, name, avatar } */
   user?: User;
   /* Callback when sending a message */
-  onSend?<T extends any>(messages: T[]): void;
+  onSend?(messages: TMessage[]): void;
   /*  Locale to localize the dates */
   locale?: string;
   /* Format to use for rendering times; default is 'LT' */
@@ -183,11 +179,11 @@ export interface GiftedChatProps {
   /* Reverses display order of messages; default is true */
   inverted?: boolean;
   /*Custom message container */
-  renderMessage?(message: any): React.ReactNode;
+  renderMessage?(message: MessageProps): React.ReactNode;
   /* Custom message text */
   renderMessageText?(messageText: MessageTextProps): React.ReactNode;
   /* Custom message image */
-  renderMessageImage?(props: MessageImageProps): React.ReactNode;
+  renderMessageImage?(props: RenderMessageImageProps): React.ReactNode;
   /* Extra props to be passed to the <Image> component created by the default renderMessageImage */
   imageProps?: MessageProps;
   /*Extra props to be passed to the MessageImage's Lightbox */
@@ -195,9 +191,9 @@ export interface GiftedChatProps {
   /* Custom view inside the bubble */
   renderCustomView?(): React.ReactNode;
   /*Custom day above a message*/
-  renderDay?(): React.ReactNode;
+  renderDay?(props: DayProps): React.ReactNode;
   /* Custom time inside a message */
-  renderTime?(): React.ReactNode;
+  renderTime?(props: TimeProps): React.ReactNode;
   /* Custom footer component on the ListView, e.g. 'User is typing...' */
   renderFooter?(): React.ReactNode;
   /* Custom component to render below the MessageContainer (separate from the ListView) */
@@ -205,13 +201,13 @@ export interface GiftedChatProps {
   /* Custom message composer container */
   renderInputToolbar?(props: InputToolbarProps): React.ReactNode;
   /*  Custom text input message composer */
-  renderComposer?(): React.ReactNode;
+  renderComposer?(props: ComposerProps): React.ReactNode;
   /* Custom action button on the left of the message composer */
-  renderActions?(): React.ReactNode;
+  renderActions?(props: ActionsProps): React.ReactNode;
   /* Custom send button; you can pass children to the original Send component quite easily, for example to use a custom icon (example) */
-  renderSend?(): React.ReactNode;
+  renderSend?(props: SendProps): React.ReactNode;
   /*Custom second line of actions below the message composer */
-  renderAccessory?(): React.ReactNode;
+  renderAccessory?(props: InputToolbarProps): React.ReactNode;
   /*Callback when the Action button is pressed (if set, the default actionSheet will not be used) */
   onPressActionButton?(): void;
   /*Distance of the chat from the bottom of the screen (e.g. useful if you display a tab bar) */
@@ -230,26 +226,33 @@ export interface GiftedChatProps {
   maxInputLength?: number;
   /* Custom parse patterns for react-native-parsed-text used to linkify message content (like URLs and phone numbers) */
   parsePatterns?(): React.ReactNode;
+  /* Force getting keyboard height to fix some display issues */
+  forceGetKeyboardHeight?: boolean;
+  /* Force send button */
+  alwaysShowSend?: boolean;
+  /* Image style */
+  imageStyle?: ViewStyle
 }
 
 export class GiftedChat extends React.Component<GiftedChatProps> {
-  static append(
-    currentMessages: any[],
-    messages: any[],
+  static defaultProps: GiftedChatProps;
+  static append<TMessage extends IMessage = IMessage>(
+    currentMessages: TMessage[],
+    messages: TMessage[],
     inverted?: boolean
-  ): any[];
-  static prepend(
-    currentMessages: any[],
-    messages: any[],
+  ): TMessage[];
+  static prepend<TMessage extends IMessage = IMessage>(
+    currentMessages: TMessage[],
+    messages: TMessage[],
     inverted?: boolean
-  ): any[];
+  ): TMessage[];
 }
 
 interface InputToolbarProps {
   renderAccessory?(props: InputToolbarProps): React.ReactNode;
-  renderActions?(props: InputToolbarProps): React.ReactNode;
-  renderSend?(props: InputToolbarProps): React.ReactNode;
-  renderComposer?(props: InputToolbarProps): React.ReactNode;
+  renderActions?(props: ActionsProps): React.ReactNode;
+  renderSend?(props: SendProps): React.ReactNode;
+  renderComposer?(props: ComposerProps): React.ReactNode;
   onPressActionButton?(): void;
   containerStyle?: ViewStyle;
   primaryStyle?: ViewStyle;
@@ -269,7 +272,7 @@ interface LoadEarlierProps {
 
 export class LoadEarlier extends React.Component<LoadEarlierProps> { }
 
-interface MessageProps {
+interface MessageProps<TMessage extends IMessage = IMessage> {
   // TODO: this is not used
   renderAvatar(props: AvatarProps): React.ReactNode;
   showUserAvatar?: boolean;
@@ -277,9 +280,9 @@ interface MessageProps {
   renderDay(props: DayProps): React.ReactNode;
   renderSystemMessage(props: SystemMessageProps): React.ReactNode;
   position?: "left" | "right";
-  currentMessage?: IMessage;
-  nextMessage?: IMessage;
-  previousMessage?: IMessage;
+  currentMessage?: TMessage;
+  nextMessage?: TMessage;
+  previousMessage?: TMessage;
   user?: User;
   inverted?: boolean;
   containerStyle: LeftRightStyle<ViewStyle>;
@@ -287,15 +290,15 @@ interface MessageProps {
 
 export class Message extends React.Component<MessageProps> { }
 
-interface MessageContainerProps {
-  messages?: IMessage[];
+interface MessageContainerProps<TMessage extends IMessage = IMessage> {
+  messages?: TMessage[];
   user?: User;
   renderFooter?(props: MessageContainerProps): React.ReactNode;
   renderMessage?(props: MessageProps): React.ReactNode;
   renderLoadEarlier?(props: LoadEarlierProps): React.ReactNode;
   // todo: not used
   onLoadEarlier?(): void;
-  listViewProps: Partial<ListViewProperties>;
+  listViewProps: Partial<RN.ListViewProps>;
   inverted?: boolean;
   loadEarlier?: boolean;
   // todo: should be InvertibleScrollView props
@@ -304,29 +307,35 @@ interface MessageContainerProps {
 
 export class MessageContainer extends React.Component<MessageContainerProps> { }
 
-interface MessageImageProps {
-  currentMessage?: IMessage;
+interface MessageImageProps<TMessage extends IMessage = IMessage> {
+  currentMessage?: TMessage;
   containerStyle?: ViewStyle;
   imageStyle?: ImageStyle;
-  imageProps?: Partial<ImageProperties>;
+  imageProps?: Partial<RN.ImageProps>;
   // todo: should be LightBox properties
   lightboxProps?: object;
 }
 
 export class MessageImage extends React.Component<MessageImageProps> { }
 
-interface MessageTextProps {
+export type RenderMessageImageProps<TMessage extends IMessage = IMessage> =
+  MessageImageProps<TMessage> & Exclude<BubbleProps<TMessage>, 'wrapperStyle' | 'containerStyle'>
+
+interface MessageTextProps<TMessage extends IMessage = IMessage> {
   position: "left" | "right";
-  currentMessage?: IMessage;
+  currentMessage?: TMessage;
   containerStyle?: LeftRightStyle<ViewStyle>;
   textStyle?: LeftRightStyle<TextStyle>;
-  linkStyle?: LeftRightStyle<LinkStyle>;
-  parsePatterns?(linkStyle: LinkStyle): any;
-  textProps?: TextProperties;
+  linkStyle?: LeftRightStyle<TextStyle>;
+  parsePatterns?(linkStyle: TextStyle): any;
+  textProps?: RN.TextProps;
   customTextStyle?: TextStyle;
 }
 
 export class MessageText extends React.Component<MessageTextProps> { }
+
+export type RenderMessageTextProps<TMessage extends IMessage = IMessage> =
+  MessageTextProps<TMessage> & Exclude<BubbleProps<TMessage>, 'wrapperStyle' | 'containerStyle'>
 
 interface SendProps {
   text?: string;
@@ -339,18 +348,18 @@ interface SendProps {
 
 export class Send extends React.Component<SendProps> { }
 
-interface SystemMessageProps {
-  currentMessage?: IMessage;
+interface SystemMessageProps<TMessage extends IMessage = IMessage> {
+  currentMessage?: TMessage;
   containerStyle?: ViewStyle;
   wrapperStyle?: ViewStyle;
   textStyle?: TextStyle;
 }
 
-export class ISystemMessage extends React.Component<SystemMessageProps> { }
+export class SystemMessage extends React.Component<SystemMessageProps> { }
 
-interface TimeProps {
+interface TimeProps<TMessage extends IMessage = IMessage> {
   position?: "left" | "right";
-  currentMessage?: IMessage;
+  currentMessage?: TMessage;
   containerStyle?: LeftRightStyle<ViewStyle>;
   textStyle?: LeftRightStyle<TextStyle>;
   timeFormat?: string;
@@ -358,11 +367,10 @@ interface TimeProps {
 
 export class Time extends React.Component<TimeProps> { }
 
-export type utils = {
-  isSameUser(currrentMessage?: IMessage, message?: IMessage): boolean;
-  isSameDay(currentMessage?: IMessage, message?: IMessage): boolean;
-  isSameTime(currentMessage?: IMessage, message?: IMessage): boolean;
+export type utils<TMessage extends IMessage = IMessage> = {
+  isSameUser(currentMessage?: TMessage, message?: TMessage): boolean;
+  isSameDay(currentMessage?: TMessage, message?: TMessage): boolean;
+  isSameTime(currentMessage?: TMessage, message?: TMessage): boolean;
 };
 
 export const utils: utils;
-

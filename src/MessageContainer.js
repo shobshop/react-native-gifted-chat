@@ -93,7 +93,7 @@ export default class MessageContainer extends React.PureComponent {
       }
       item.user = {};
     }
-    const { messages, ...restProps, inverted } = this.props;
+    const { messages, inverted, ...restProps } = this.props;
     const previousMessage = inverted ? (messages[index + 1] || {}) : (messages[index - 1] || {});
     const nextMessage = inverted ? (messages[index - 1] || {}) : (messages[index + 1] || {});
 

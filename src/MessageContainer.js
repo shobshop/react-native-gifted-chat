@@ -145,7 +145,9 @@ export default class MessageContainer extends React.PureComponent {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // Make messages start from top when inverted=true. Snippet from https://github.com/FaridSafi/react-native-gifted-chat/issues/385#issuecomment-435685545
+    flex: 0,
+    flexDirection: 'row'
   },
   contentContainerStyle: {
     justifyContent: 'flex-end',
